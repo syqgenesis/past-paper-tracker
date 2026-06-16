@@ -8,11 +8,18 @@ import {
   getQuestionCounts,
   getWeeklyProgress,
   getStudyStreak,
+  getPaperCount,
 } from "@/lib/analytics";
 import { getSessionStats } from "@/lib/session-analytics";
 import DashboardClient from "./dashboard-client";
+import FirstRunWelcome from "./components/first-run-welcome";
 
 export default function DashboardPage() {
+  // First run: nothing scanned yet — show onboarding instead of an empty dashboard.
+  if (getPaperCount() === 0) {
+    return <FirstRunWelcome />;
+  }
+
   const stats           = getDashboardStats();
   const accuracyByTopic = getAccuracyByTopic();
   const coldTopics      = getColdTopics(7);

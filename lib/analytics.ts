@@ -468,6 +468,13 @@ export interface QuestionCounts {
   unattempted: number;
 }
 
+// Total number of papers in the library. 0 means nothing has been scanned yet
+// — used to show the first-run welcome screen instead of an empty dashboard.
+export function getPaperCount(): number {
+  const row = db.get<{ n: number }>(sql`SELECT COUNT(*) AS n FROM papers`);
+  return row?.n ?? 0;
+}
+
 export function getQuestionCounts(): QuestionCounts {
   const row = db.get<{ total: number; attempted: number }>(sql`
     SELECT
