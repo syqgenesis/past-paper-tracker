@@ -8,14 +8,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing path parameter" }, { status: 400 });
   }
 
-  // Resolve to absolute path and guard against path traversal
+  const root = process.env.PAPERS_ROOT;
+  if (!root) {
+    return NextResponse.json({ error: "PAPERS_ROOT not configured" }, { status: 500 });
+  }
+
+  // Resolve to absolute path and jail to PAPERS_ROOT. The `+ path.sep` boundary
+  // prevents a sibling dir that shares the root's prefix from escaping the jail
+  // (e.g. root "/x/Papers" must not match "/x/Papers-private/...").
   const resolved = path.resolve(filePath);
-  const papersRoot = process.env.PAPERS_ROOT;
-  if (papersRoot) {
-    const resolvedRoot = path.resolve(papersRoot);
-    if (!resolved.startsWith(resolvedRoot)) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
+  const resolvedRoot = path.resolve(root);
+  if (!resolved.startsWith(resolvedRoot + path.sep) && resolved !== resolvedRoot) {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
   if (!resolved.endsWith(".pdf")) {
