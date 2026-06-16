@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Optional: daily WAL-safe backup of the tracker DB (macOS launchd).
+
+  Before installing, replace the two placeholders below:
+    {{PROJECT_PATH}}  -> absolute path to this repo on your machine
+                         (e.g. /Users/you/code/past-paper-tracker)
+    {{HOME}}          -> your home directory (e.g. /Users/you)
+
+  Install:
+    cp scripts/backup/com.example.chem-backup.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.example.chem-backup.plist
+
+  Uninstall:
+    launchctl unload ~/Library/LaunchAgents/com.example.chem-backup.plist
+    rm ~/Library/LaunchAgents/com.example.chem-backup.plist
+
+  Run now (testing):
+    launchctl start com.example.chem-backup
+
+  Check logs:
+    tail -f {{HOME}}/Library/Logs/chem-backup.log
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.example.chem-backup</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>{{PROJECT_PATH}}/scripts/backup/backup-db.sh</string>
+    </array>
+
+    <!-- Trigger: every day at 06:00 local time. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>6</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- If the Mac is asleep at 06:00, launchd runs the job on next wake. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- Logs (separate so stdout/stderr don't mix). -->
+    <key>StandardOutPath</key>
+    <string>{{HOME}}/Library/Logs/chem-backup.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{HOME}}/Library/Logs/chem-backup.err</string>
+</dict>
+</plist>
